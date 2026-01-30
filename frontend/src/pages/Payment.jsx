@@ -20,6 +20,14 @@ function Payment() {
     cvv: ""
   });
   const [upiId, setUpiId] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+
+  // Initialize delivery address from user profile
+  useEffect(() => {
+    if (user?.address) {
+      setDeliveryAddress(user.address);
+    }
+  }, [user]);
 
   const deliveryFee = totalPrice > 500 ? 0 : 29;
   const platformFee = 10;
@@ -67,12 +75,19 @@ function Payment() {
   };
 
   const finalizeOrder = async () => {
+    // Validate delivery address
+    if (!deliveryAddress || deliveryAddress.trim() === "") {
+      toast.error("Please enter a delivery address");
+      setLoading(false);
+      return;
+    }
+
     try {
       const orderData = {
         userEmail: user.email,
         totalAmount: finalTotal,
         paymentMethod: method.toUpperCase(),
-        deliveryAddress: user.address || "No address provided",
+        deliveryAddress: deliveryAddress.trim(),
         items: cartItems.map(item => ({
           name: item.name,
           price: item.price,
@@ -147,6 +162,18 @@ function Payment() {
           <p style={{ color: "#9a9aad", fontSize: 14, marginBottom: 20 }}>
             Choose a payment method and confirm your order.
           </p>
+
+          {/* Delivery Address Section */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={labelStyle}>Delivery Address *</label>
+            <textarea
+              style={{ ...inputStyle, minHeight: "80px", resize: "vertical" }}
+              value={deliveryAddress}
+              onChange={(e) => setDeliveryAddress(e.target.value)}
+              placeholder="Enter your complete delivery address"
+              required
+            />
+          </div>
 
           <div
             style={{

@@ -1531,11 +1531,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\CDAC Project\\fooddelivery-app\\backend\\AdminRiderService\\AdminRiderService.csproj",
+      "projectUniqueName": "C:\\Users\\DELL\\OneDrive\\Desktop\\proj\\CDAC-Food-Delivery\\backend\\AdminRiderService\\AdminRiderService.csproj",
       "projectName": "AdminRiderService",
-      "projectPath": "E:\\CDAC Project\\fooddelivery-app\\backend\\AdminRiderService\\AdminRiderService.csproj",
+      "projectPath": "C:\\Users\\DELL\\OneDrive\\Desktop\\proj\\CDAC-Food-Delivery\\backend\\AdminRiderService\\AdminRiderService.csproj",
       "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-      "outputPath": "E:\\CDAC Project\\fooddelivery-app\\backend\\AdminRiderService\\obj\\",
+      "outputPath": "C:\\Users\\DELL\\OneDrive\\Desktop\\proj\\CDAC-Food-Delivery\\backend\\AdminRiderService\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config"

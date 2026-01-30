@@ -168,6 +168,100 @@ namespace AdminRiderService.Controllers
                 totalRevenue
             });
         }
+
+        // ==================== MENU ITEMS ====================
+
+        [HttpGet("restaurants/{restaurantId}/menu")]
+        public async Task<IActionResult> GetRestaurantMenu(long restaurantId)
+        {
+            var menuItems = await _context.MenuItems
+                .Where(m => m.HotelId == restaurantId)
+                .OrderBy(m => m.Category)
+                .ThenBy(m => m.Name)
+                .ToListAsync();
+
+            return Ok(menuItems);
+        }
+
+        [HttpGet("menu/{id}")]
+        public async Task<IActionResult> GetMenuItem(long id)
+        {
+            var menuItem = await _context.MenuItems.FindAsync(id);
+            if (menuItem == null)
+                return NotFound(new { message = "Menu item not found" });
+
+            return Ok(menuItem);
+        }
+
+        [HttpPost("restaurants/{restaurantId}/menu")]
+        public async Task<IActionResult> CreateMenuItem(long restaurantId, [FromBody] Menu menuItem)
+        {
+            try
+            {
+                Console.WriteLine($"Creating menu item for restaurant {restaurantId}");
+                Console.WriteLine($"Menu item: Name={menuItem.Name}, Price={menuItem.Price}, FoodType={menuItem.FoodType}");
+                
+                menuItem.HotelId = restaurantId;
+                _context.MenuItems.Add(menuItem);
+                
+                Console.WriteLine("Attempting to save changes...");
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Menu item saved successfully");
+
+                return CreatedAtAction(nameof(GetMenuItem), new { id = menuItem.Id }, menuItem);
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Database error: {ex.Message}");
+                Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
+                return BadRequest(new { 
+                    message = "Database error while creating menu item", 
+                    error = ex.InnerException?.Message ?? ex.Message 
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating menu item: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return StatusCode(500, new { 
+                    message = "Error creating menu item", 
+                    error = ex.Message 
+                });
+            }
+        }
+
+        [HttpPut("menu/{id}")]
+        public async Task<IActionResult> UpdateMenuItem(long id, [FromBody] Menu updatedMenuItem)
+        {
+            var menuItem = await _context.MenuItems.FindAsync(id);
+            if (menuItem == null)
+                return NotFound(new { message = "Menu item not found" });
+
+            menuItem.Name = updatedMenuItem.Name ?? menuItem.Name;
+            menuItem.Description = updatedMenuItem.Description ?? menuItem.Description;
+            menuItem.Price = updatedMenuItem.Price != 0 ? updatedMenuItem.Price : menuItem.Price;
+            menuItem.ImageUrl = updatedMenuItem.ImageUrl ?? menuItem.ImageUrl;
+            menuItem.Category = updatedMenuItem.Category ?? menuItem.Category;
+            menuItem.FoodType = updatedMenuItem.FoodType ?? menuItem.FoodType;
+            menuItem.IsAvailable = updatedMenuItem.IsAvailable;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Menu item updated successfully", menuItem });
+        }
+
+        [HttpDelete("menu/{id}")]
+        public async Task<IActionResult> DeleteMenuItem(long id)
+        {
+            var menuItem = await _context.MenuItems.FindAsync(id);
+            if (menuItem == null)
+                return NotFound(new { message = "Menu item not found" });
+
+            _context.MenuItems.Remove(menuItem);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Menu item deleted successfully" });
+        }
     }
 
     public class UpdateStatusRequest

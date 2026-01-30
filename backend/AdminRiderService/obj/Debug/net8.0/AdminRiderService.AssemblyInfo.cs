@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AdminRiderService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4ee51f8b98a92eab7fc78114d6a3ef772a6b0e1f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ca473a35fcbc9c67606c15a70e05859fd3a4b8cd")]
 [assembly: System.Reflection.AssemblyProductAttribute("AdminRiderService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AdminRiderService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

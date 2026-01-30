@@ -11,6 +11,7 @@ namespace AdminRiderService.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Restaurant> Restaurants { get; set; }
+        public DbSet<Menu> MenuItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "s6Ee/sg0Yo8=",
+  "dgSpecHash": "RqD5BKBkivc=",
   "success": true,
-  "projectFilePath": "E:\\CDAC Project\\fooddelivery-app\\backend\\AdminRiderService\\AdminRiderService.csproj",
+  "projectFilePath": "C:\\Users\\DELL\\OneDrive\\Desktop\\proj\\CDAC-Food-Delivery\\backend\\AdminRiderService\\AdminRiderService.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\DELL\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\DELL\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.0\\microsoft.aspnetcore.authentication.jwtbearer.8.0.0.nupkg.sha512",

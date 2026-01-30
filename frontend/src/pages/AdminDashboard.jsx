@@ -29,6 +29,25 @@ function AdminDashboard() {
     imageUrl: ""
   });
 
+  // Menu Management State
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [menuItems, setMenuItems] = useState([]);
+  const [filteredMenuItems, setFilteredMenuItems] = useState([]);
+  const [menuSearchTerm, setMenuSearchTerm] = useState("");
+  const [showMenuModal, setShowMenuModal] = useState(false);
+  const [showAddMenuModal, setShowAddMenuModal] = useState(false);
+  const [showEditMenuModal, setShowEditMenuModal] = useState(false);
+  const [currentMenuItem, setCurrentMenuItem] = useState(null);
+  const [newMenuItem, setNewMenuItem] = useState({
+    name: "",
+    description: "",
+    price: "",
+    imageUrl: "",
+    category: "",
+    foodType: "VEG",
+    isAvailable: true
+  });
+
   const API_BASE = "http://localhost:5189/api/admin";
   const token = localStorage.getItem("token");
 
@@ -157,6 +176,155 @@ function AdminDashboard() {
     }
   };
 
+  // ==================== MENU MANAGEMENT ====================
+
+  const handleManageMenu = async (restaurant) => {
+    setSelectedRestaurant(restaurant);
+    setMenuSearchTerm("");
+    setLoading(true);
+    try {
+      console.log(`Fetching menu for restaurant ID: ${restaurant.id}`);
+      console.log(`API URL: ${API_BASE}/restaurants/${restaurant.id}/menu`);
+      console.log(`Token: ${token ? 'Present' : 'Missing'}`);
+
+      const response = await axios.get(`${API_BASE}/restaurants/${restaurant.id}/menu`, axiosConfig);
+      console.log("Menu items response:", response.data);
+      setMenuItems(response.data);
+      setFilteredMenuItems(response.data);
+      setShowMenuModal(true);
+    } catch (error) {
+      console.error("Error fetching menu items:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      console.error("Error message:", error.message);
+      toast.error(`Failed to load menu items: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddMenuItem = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      console.log("Adding menu item for restaurant:", selectedRestaurant.id);
+      console.log("Menu item data:", {
+        ...newMenuItem,
+        price: parseInt(newMenuItem.price) || 0
+      });
+
+      const response = await axios.post(`${API_BASE}/restaurants/${selectedRestaurant.id}/menu`, {
+        ...newMenuItem,
+        price: parseInt(newMenuItem.price) || 0
+      }, axiosConfig);
+
+      console.log("Menu item added successfully:", response.data);
+      toast.success("Menu item added successfully");
+      setShowAddMenuModal(false);
+      setNewMenuItem({
+        name: "",
+        description: "",
+        price: "",
+        imageUrl: "",
+        category: "",
+        foodType: "VEG",
+        isAvailable: true
+      });
+      // Refresh menu items
+      const menuResponse = await axios.get(`${API_BASE}/restaurants/${selectedRestaurant.id}/menu`, axiosConfig);
+      setMenuItems(menuResponse.data);
+      setFilteredMenuItems(menuResponse.data);
+    } catch (error) {
+      console.error("Error adding menu item:", error);
+      console.error("Error response data:", error.response?.data);
+      console.error("Error response status:", error.response?.status);
+      console.error("Error response headers:", error.response?.headers);
+      console.error("Full error:", JSON.stringify(error.response, null, 2));
+
+      const errorMessage = error.response?.data?.message
+        || error.response?.data?.title
+        || error.response?.data
+        || error.message;
+
+      toast.error(`Failed to add menu item: ${errorMessage}`);
+    }
+  };
+
+  const handleEditMenuItem = (item) => {
+    setCurrentMenuItem(item);
+    setNewMenuItem({
+      name: item.name,
+      description: item.description || "",
+      price: item.price.toString(),
+      imageUrl: item.imageUrl || "",
+      category: item.category || "",
+      foodType: item.foodType || "VEG",
+      isAvailable: item.isAvailable
+    });
+    setShowEditMenuModal(true);
+  };
+
+  const handleUpdateMenuItem = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      await axios.put(`${API_BASE}/menu/${currentMenuItem.id}`, {
+        ...newMenuItem,
+        price: parseInt(newMenuItem.price) || 0
+      }, axiosConfig);
+      toast.success("Menu item updated successfully");
+      setShowEditMenuModal(false);
+      setCurrentMenuItem(null);
+      setNewMenuItem({
+        name: "",
+        description: "",
+        price: "",
+        imageUrl: "",
+        category: "",
+        foodType: "VEG",
+        isAvailable: true
+      });
+      // Refresh menu items
+      const response = await axios.get(`${API_BASE}/restaurants/${selectedRestaurant.id}/menu`, axiosConfig);
+      setMenuItems(response.data);
+      setFilteredMenuItems(response.data);
+    } catch (error) {
+      console.error("Error updating menu item:", error);
+      toast.error("Failed to update menu item");
+    }
+  };
+
+  const handleDeleteMenuItem = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this menu item?")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_BASE}/menu/${id}`, axiosConfig);
+      toast.success("Menu item deleted successfully");
+      // Refresh menu items
+      const response = await axios.get(`${API_BASE}/restaurants/${selectedRestaurant.id}/menu`, axiosConfig);
+      setMenuItems(response.data);
+      setFilteredMenuItems(response.data);
+    } catch (error) {
+      console.error("Error deleting menu item:", error);
+      toast.error("Failed to delete menu item");
+    }
+  };
+
+  // Filter menu items based on search term
+  const handleMenuSearch = (searchTerm) => {
+    setMenuSearchTerm(searchTerm);
+    if (!searchTerm.trim()) {
+      setFilteredMenuItems(menuItems);
+      return;
+    }
+    const filtered = menuItems.filter(item =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    setFilteredMenuItems(filtered);
+  };
+
   return (
     <div className="admin-page">
       <header className="admin-header">
@@ -258,6 +426,7 @@ function AdminDashboard() {
                         </div>
 
                         <div className="card-actions">
+                          <button className="update" onClick={() => handleManageMenu(r)}>Manage Menu</button>
                           <button className="update" onClick={() => handleUpdateRestaurant(r.id)}>Update</button>
                           <button className="delete" onClick={() => handleDeleteRestaurant(r.id)}>Delete</button>
                         </div>
@@ -371,6 +540,258 @@ function AdminDashboard() {
               <div className="modal-footer">
                 <button type="button" className="cancel-btn" onClick={() => setShowAddModal(false)}>Cancel</button>
                 <button type="submit" className="save-btn">Save Restaurant</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Menu Management Modal */}
+      {showMenuModal && selectedRestaurant && (
+        <div className="modal-overlay">
+          <div className="admin-modal" style={{ maxWidth: "900px" }}>
+            <div className="modal-header">
+              <h2>Menu - {selectedRestaurant.name}</h2>
+              <button className="close-btn" onClick={() => setShowMenuModal(false)}>&times;</button>
+            </div>
+            <div style={{ padding: "20px" }}>
+              <button className="add-btn" onClick={() => setShowAddMenuModal(true)} style={{ marginBottom: "20px" }}>＋ Add Menu Item</button>
+
+              {menuItems.length === 0 ? (
+                <p className="no-menu-items">No menu items found. Add your first item!</p>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    className="menu-search-box"
+                    placeholder="🔍 Search menu items by name, category, or description..."
+                    value={menuSearchTerm}
+                    onChange={(e) => handleMenuSearch(e.target.value)}
+                  />
+                  {filteredMenuItems.length === 0 ? (
+                    <p className="no-menu-items">No menu items match your search.</p>
+                  ) : (
+                    <div className="grid">
+                      {filteredMenuItems.map(item => (
+                        <div className="card menu-item-card" key={item.id}>
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.name} className="menu-item-image" onError={(e) => e.target.style.display = 'none'} />
+                          ) : (
+                            <div className="menu-item-placeholder">📷 No Image</div>
+                          )}
+                          <h3>{item.name}</h3>
+                          <p><strong>Price:</strong> ₹{item.price}</p>
+                          {item.description && <p><small>{item.description}</small></p>}
+                          <p><strong>Category:</strong> {item.category || "N/A"}</p>
+                          <span className="badge" style={{
+                            background: item.foodType === "VEG" ? "#4caf50" : item.foodType === "VEGAN" ? "#8bc34a" : "#f44336"
+                          }}>{item.foodType}</span>
+                          <span className="badge" style={{ marginLeft: "5px" }}>
+                            {item.isAvailable ? "Available" : "Unavailable"}
+                          </span>
+                          <div className="card-actions" style={{ marginTop: "10px" }}>
+                            <button className="update" onClick={() => handleEditMenuItem(item)}>Edit</button>
+                            <button className="delete" onClick={() => handleDeleteMenuItem(item.id)}>Delete</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Menu Item Modal */}
+      {showAddMenuModal && (
+        <div className="modal-overlay">
+          <div className="admin-modal">
+            <div className="modal-header">
+              <h2>Add Menu Item</h2>
+              <button className="close-btn" onClick={() => setShowAddMenuModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleAddMenuItem} className="modal-form">
+              <div className="form-group">
+                <label>Item Name</label>
+                <input
+                  type="text"
+                  required
+                  value={newMenuItem.name}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
+                  placeholder="e.g. Paneer Tikka"
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={newMenuItem.description}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, description: e.target.value })}
+                  placeholder="Brief description of the item"
+                  rows="3"
+                />
+              </div>
+              <div className="form-group">
+                <label>Price (₹)</label>
+                <input
+                  type="number"
+                  required
+                  value={newMenuItem.price}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, price: e.target.value })}
+                  placeholder="e.g. 250"
+                />
+              </div>
+              <div className="form-group">
+                <label>Category</label>
+                <input
+                  type="text"
+                  value={newMenuItem.category}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, category: e.target.value })}
+                  placeholder="e.g. Appetizers, Main Course, Desserts"
+                />
+              </div>
+              <div className="form-group">
+                <label>Food Type</label>
+                <select
+                  value={newMenuItem.foodType}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, foodType: e.target.value })}
+                >
+                  <option value="VEG">Vegetarian</option>
+                  <option value="NON_VEG">Non-Vegetarian</option>
+                  <option value="VEGAN">Vegan</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Image URL</label>
+                <input
+                  type="url"
+                  value={newMenuItem.imageUrl}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                />
+                {newMenuItem.imageUrl && (
+                  <img
+                    src={newMenuItem.imageUrl}
+                    alt="Preview"
+                    className="image-preview"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      toast.error("Invalid image URL");
+                    }}
+                  />
+                )}
+              </div>
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={newMenuItem.isAvailable}
+                    onChange={(e) => setNewMenuItem({ ...newMenuItem, isAvailable: e.target.checked })}
+                  />
+                  {" "}Available
+                </label>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="cancel-btn" onClick={() => setShowAddMenuModal(false)}>Cancel</button>
+                <button type="submit" className="save-btn">Add Item</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Menu Item Modal */}
+      {showEditMenuModal && currentMenuItem && (
+        <div className="modal-overlay">
+          <div className="admin-modal">
+            <div className="modal-header">
+              <h2>Edit Menu Item</h2>
+              <button className="close-btn" onClick={() => setShowEditMenuModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleUpdateMenuItem} className="modal-form">
+              <div className="form-group">
+                <label>Item Name</label>
+                <input
+                  type="text"
+                  required
+                  value={newMenuItem.name}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
+                  placeholder="e.g. Paneer Tikka"
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={newMenuItem.description}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, description: e.target.value })}
+                  placeholder="Brief description of the item"
+                  rows="3"
+                />
+              </div>
+              <div className="form-group">
+                <label>Price (₹)</label>
+                <input
+                  type="number"
+                  required
+                  value={newMenuItem.price}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, price: e.target.value })}
+                  placeholder="e.g. 250"
+                />
+              </div>
+              <div className="form-group">
+                <label>Category</label>
+                <input
+                  type="text"
+                  value={newMenuItem.category}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, category: e.target.value })}
+                  placeholder="e.g. Appetizers, Main Course, Desserts"
+                />
+              </div>
+              <div className="form-group">
+                <label>Food Type</label>
+                <select
+                  value={newMenuItem.foodType}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, foodType: e.target.value })}
+                >
+                  <option value="VEG">Vegetarian</option>
+                  <option value="NON_VEG">Non-Vegetarian</option>
+                  <option value="VEGAN">Vegan</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Image URL</label>
+                <input
+                  type="url"
+                  value={newMenuItem.imageUrl}
+                  onChange={(e) => setNewMenuItem({ ...newMenuItem, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                />
+                {newMenuItem.imageUrl && (
+                  <img
+                    src={newMenuItem.imageUrl}
+                    alt="Preview"
+                    className="image-preview"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      toast.error("Invalid image URL");
+                    }}
+                  />
+                )}
+              </div>
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={newMenuItem.isAvailable}
+                    onChange={(e) => setNewMenuItem({ ...newMenuItem, isAvailable: e.target.checked })}
+                  />
+                  {" "}Available
+                </label>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="cancel-btn" onClick={() => setShowEditMenuModal(false)}>Cancel</button>
+                <button type="submit" className="save-btn">Update Item</button>
               </div>
             </form>
           </div>
