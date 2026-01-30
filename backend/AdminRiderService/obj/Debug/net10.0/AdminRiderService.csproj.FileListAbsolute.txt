@@ -1,0 +1,9 @@
+E:\CDAC Project\fooddelivery-app\backend\AdminRiderService\obj\Debug\net10.0\AdminRiderService.csproj.AssemblyReference.cache
+E:\CDAC Project\fooddelivery-app\backend\AdminRiderService\obj\Debug\net10.0\rpswa.dswa.cache.json
+E:\CDAC Project\fooddelivery-app\backend\AdminRiderService\obj\Debug\net10.0\AdminRiderService.GeneratedMSBuildEditorConfig.editorconfig
+E:\CDAC Project\fooddelivery-app\backend\AdminRiderService\obj\Debug\net10.0\AdminRiderService.AssemblyInfoInputs.cache
+E:\CDAC Project\fooddelivery-app\backend\AdminRiderService\obj\Debug\net10.0\AdminRiderService.AssemblyInfo.cs
+E:\CDAC Project\fooddelivery-app\backend\AdminRiderService\obj\Debug\net10.0\AdminRiderService.csproj.CoreCompileInputs.cache
+E:\CDAC Project\fooddelivery-app\backend\AdminRiderService\obj\Debug\net10.0\AdminRiderService.MvcApplicationPartsAssemblyInfo.cs
+E:\CDAC Project\fooddelivery-app\backend\AdminRiderService\obj\Debug\net10.0\AdminRiderService.MvcApplicationPartsAssemblyInfo.cache
+E:\CDAC Project\fooddelivery-app\backend\AdminRiderService\obj\Debug\net10.0\AdminRiderService.sourcelink.json
